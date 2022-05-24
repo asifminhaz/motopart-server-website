@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -18,6 +19,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           await client.connect();
           const toolCollection = client.db('motoparts').collection('tools')
           const userCollection = client.db('motoparts').collection('users')
+          const ordersCollection = client.db('motoparts').collection('orders')
 
           app.get('/tool', async(req, res) => {
                     const query = {}
@@ -33,6 +35,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
                 });
 
                 app.put('/user/:email', async (req, res) => {
+                    const name = req.body      
                     const email = req.params.email;
                     const user = req.body;
                     const filter = { email: email };
@@ -40,8 +43,25 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
                     const updatedDoc = {
                       $set: user,
                     };
-                          const result = await userCollection.updateOne(filter, updatedDoc, options)
-                          res.send(result)
+                          const result = await userCollection.updateOne(filter, updatedDoc, options, name)
+                          const token = jwt.sign({email : email}, process.env.ACCESS_TOKEN_SECRET,{expiresIn : '1d'})
+                          res.send({result, token})
+                })
+
+          //       implement quantity
+          app.put('/orders/:id', async (req, res) => {
+                    const id = req.params.id;
+                    const updatedItems = req.body;
+                    const filter = { _id: ObjectId(id) };
+                    const options = { upsert: true };
+                    const updatedDoc = {
+                        $set: {
+                            quantity: updatedItems.quantity
+                        }
+                    };
+                    const result = await itemsCollection.updateOne(filter, updatedDoc, options);
+                    res.send(result);
+        
                 })
 
 
