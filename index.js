@@ -49,19 +49,10 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
                 })
 
           //       implement quantity
-          app.put('/orders/:id', async (req, res) => {
-                    const id = req.params.id;
-                    const updatedItems = req.body;
-                    const filter = { _id: ObjectId(id) };
-                    const options = { upsert: true };
-                    const updatedDoc = {
-                        $set: {
-                            quantity: updatedItems.quantity
-                        }
-                    };
-                    const result = await itemsCollection.updateOne(filter, updatedDoc, options);
-                    res.send(result);
-        
+          app.post('/orders', async (req, res) => {
+                    const newOrders = req.body;
+                    const result = await ordersCollection.insertOne(newOrders)
+                    res.send(result)
                 })
 
 
