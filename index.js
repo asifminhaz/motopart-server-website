@@ -17,6 +17,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
            try{
           await client.connect();
           const toolCollection = client.db('motoparts').collection('tools')
+          const userCollection = client.db('motoparts').collection('users')
 
           app.get('/tool', async(req, res) => {
                     const query = {}
@@ -30,6 +31,20 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
                     const tool = await toolCollection.findOne(query);
                     res.send(tool);
                 });
+
+                app.put('/user/:email', async (req, res) => {
+                    const email = req.params.email;
+                    const user = req.body;
+                    const filter = { email: email };
+                    const options = { upsert: true };
+                    const updatedDoc = {
+                      $set: user,
+                    };
+                          const result = await userCollection.updateOne(filter, updatedDoc, options)
+                          res.send(result)
+                })
+
+
            }
            finally{
 
