@@ -21,6 +21,13 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const userCollection = client.db('motoparts').collection('users')
           const ordersCollection = client.db('motoparts').collection('orders')
 
+          app.get('/orders/:email', async(req, res)=> {
+                    const email = req.params.email;
+                    const query = {email: email}
+                    const orders = await ordersCollection.find(query).toArray()
+                    res.send(orders)
+
+          })
           app.get('/tool', async(req, res) => {
                     const query = {}
                     const cursor = toolCollection.find(query)
@@ -48,13 +55,24 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
                           res.send({result, token})
                 })
 
-          //       implement quantity
-          app.post('/orders', async (req, res) => {
+                app.post('/orders', async (req, res) => {
                     const newOrders = req.body;
                     const result = await ordersCollection.insertOne(newOrders)
                     res.send(result)
                 })
 
+               
+
+                app.put('/user/admin/:email',  async (req, res) => {
+                    const email = req.params.email;
+                    const filter = { email: email };
+                    const updateDoc = {
+                      $set: { role: 'admin' },
+                    };
+                    const result = await userCollection.updateOne(filter, updateDoc);
+                    res.send(result);
+                  })
+              
 
            }
            finally{
