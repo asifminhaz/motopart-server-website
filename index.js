@@ -28,6 +28,17 @@ function verifyJWT (req, res, next){
             next()
           })
 }
+
+const verifyAdmin = async (req, res, next) => {
+  const requester = req.decoded.email;
+  const requesterAccount = await userCollection.findOne({ email: requester });
+  if (requesterAccount.role === 'admin') {
+    next();
+  }
+  else {
+    res.status(403).send({ message: 'forbidden' });
+  }
+}
  async function run (){
            try{
           await client.connect();
@@ -35,6 +46,7 @@ function verifyJWT (req, res, next){
           const userCollection = client.db('motoparts').collection('users')
           const ordersCollection = client.db('motoparts').collection('orders')
           const productCollection = client.db('motoparts').collection('products');
+          const reviewCollection = client.db('motoparts').collection('reviews');
 
           app.get('/orders/:email', verifyJWT, async(req, res)=> {
                     const email = req.params.email;
@@ -52,9 +64,15 @@ function verifyJWT (req, res, next){
                    
 
           })
+          // app.get('/tool', async(req, res) => {
+          //           const query = {}
+          //           const cursor = toolCollection.find(query).project({name: 1})
+          //           const tools = await cursor.toArray();
+          //           res.send(tools)
+          // })
           app.get('/tool', async(req, res) => {
                     const query = {}
-                    const cursor = toolCollection.find(query).project({name: 1})
+                    const cursor = toolCollection.find(query)
                     const tools = await cursor.toArray();
                     res.send(tools)
           })
@@ -127,15 +145,29 @@ function verifyJWT (req, res, next){
                     const result = await userCollection.updateOne(filter, updateDoc);
                     res.send(result);
                   })
-                  app.post('/product', verifyJWT,  async (req, res) => {
+                  app.post('/product',  async (req, res) => {
                     const product = req.body;
                     const result = await productCollection.insertOne(product);
                     res.send(result);
                   });
+                  app.post('/reviews', verifyJWT, async (req, res) => {
+                    const reviews = req.body;
+                    const allReviews = await reviewCollection.insertOne(reviews);
+                    res.send(allReviews);
+                  });
+                  
+    app.get('/product',  async (req, res) => {
+      const product = await productCollection.find().sort({_id: -1}).toArray();
+      res.send(product);
+    })
+    app.get('/reviews',  async (req, res) => {
+      const reviews = await reviewCollection.find().sort({_id: -1}).toArray();
+      res.send(reviews);
+    })
               
 
            }
-           finally{
+           finally{      
 
            }
  }
