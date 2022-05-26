@@ -34,6 +34,7 @@ function verifyJWT (req, res, next){
           const toolCollection = client.db('motoparts').collection('tools')
           const userCollection = client.db('motoparts').collection('users')
           const ordersCollection = client.db('motoparts').collection('orders')
+          const productCollection = client.db('motoparts').collection('products');
 
           app.get('/orders/:email', verifyJWT, async(req, res)=> {
                     const email = req.params.email;
@@ -53,7 +54,7 @@ function verifyJWT (req, res, next){
           })
           app.get('/tool', async(req, res) => {
                     const query = {}
-                    const cursor = toolCollection.find(query)
+                    const cursor = toolCollection.find(query).project({name: 1})
                     const tools = await cursor.toArray();
                     res.send(tools)
           })
@@ -126,6 +127,11 @@ function verifyJWT (req, res, next){
                     const result = await userCollection.updateOne(filter, updateDoc);
                     res.send(result);
                   })
+                  app.post('/product', verifyJWT,  async (req, res) => {
+                    const product = req.body;
+                    const result = await productCollection.insertOne(product);
+                    res.send(result);
+                  });
               
 
            }
