@@ -47,6 +47,7 @@ const verifyAdmin = async (req, res, next) => {
           const ordersCollection = client.db('motoparts').collection('orders')
           const productCollection = client.db('motoparts').collection('products');
           const reviewCollection = client.db('motoparts').collection('reviews');
+          const profileCollection = client.db('motoparts').collection('profile');
 
           app.get('/orders/:email', verifyJWT, async(req, res)=> {
                     const email = req.params.email;
@@ -154,6 +155,11 @@ const verifyAdmin = async (req, res, next) => {
                     const reviews = req.body;
                     const allReviews = await reviewCollection.insertOne(reviews);
                     res.send(allReviews);
+                  });
+                  app.post('/profile', verifyJWT, async (req, res) => {
+                    const profile = req.body;
+                    const allProfile = await profileCollection.insertOne(profile);
+                    res.send(allProfile);
                   });
                   
     app.get('/product',  async (req, res) => {
