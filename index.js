@@ -65,6 +65,44 @@ const verifyAdmin = async (req, res, next) => {
                    
 
           })
+        
+          // app.get('/purchase/:id',  async(req, res) =>{
+          //   const id = req.params.id;
+          //   const query = {_id: ObjectId(id)};
+          //   const purchase = await ordersCollection.findOne(query);
+          //   res.send(purchase);
+          // })
+
+app.get('/order' , async(req, res)=> {
+  const order = await ordersCollection.find().toArray()
+  res.send(order)
+})
+
+// app.get('/orders', async(req, res)=> {
+//   const email = req.query.email;
+//   const decodedEmail = req.decoded.email;
+//   if(email === decodedEmail){
+//     const query = {email: email}
+//     const orders = await ordersCollection.find(query).toArray()
+//     res.send(orders)
+//   }
+//   else{
+//     return res.status(403).send({message: 'Forbidden access'})
+//   }
+ 
+
+// })
+app.get('/orders/:id', verifyJWT,  async(req, res) =>{
+  const id = req.params.id;
+  const query = {_id: ObjectId(id)};
+  const orders = await ordersCollection.findOne(query);
+  res.send(orders);
+})
+
+
+
+
+
           // app.get('/tool', async(req, res) => {
           //           const query = {}
           //           const cursor = toolCollection.find(query).project({name: 1})
@@ -77,6 +115,15 @@ const verifyAdmin = async (req, res, next) => {
                     const tools = await cursor.toArray();
                     res.send(tools)
           })
+          // vhgjnk
+          app.get('/orders', async(req, res) => {
+                     const query = {}
+                    const cursor = ordersCollection.find(query)
+                    const orders = await cursor.toArray();
+                    res.send(orders)
+          })
+
+
           app.get('/tool/:id', async(req, res) =>{
                     const id = req.params.id;
                     const query={_id: ObjectId(id)};
@@ -89,7 +136,7 @@ const verifyAdmin = async (req, res, next) => {
                   res.send(users)
                 })
 
-                app.put('/user/admin/:email', async (req, res) => {   
+                app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {   
                     const email = req.params.email;     
                     const initiator = req.decoded.email
                     const initiatorAccount = await userCollection.findOne({email: initiator})
@@ -135,8 +182,15 @@ const verifyAdmin = async (req, res, next) => {
                   res.send({admin : isAdmin})
                 })
 
-               
+                // app.delete('/user/:email',  async (req, res) => {
+                //   const email = req.params.email;
+                //   const filter = {email: email};
+                //   const result = await userCollection.deleteOne(filter);
+                //   res.send(result);
+                // })
+             
 
+               
                 app.put('/user/admin/:email',  async (req, res) => {
                     const email = req.params.email;
                     const filter = { email: email };
@@ -146,11 +200,35 @@ const verifyAdmin = async (req, res, next) => {
                     const result = await userCollection.updateOne(filter, updateDoc);
                     res.send(result);
                   })
+
+
+
+                  app.post('/tool',  async (req, res) => {
+                    const tool = req.body;
+                    const result = await toolCollection.insertOne(tool);
+                    res.send(result);
+                  });
+
+
                   app.post('/product',  async (req, res) => {
                     const product = req.body;
                     const result = await productCollection.insertOne(product);
                     res.send(result);
                   });
+
+
+                  app.get('/product',  async (req, res) => {
+                    const product = await productCollection.find().sort({_id: -1}).toArray();
+                    res.send(product);
+                  })
+
+                  app.delete('/product/:email',  async (req, res) => {
+                    const email = req.params.email;
+                    const filter = {email: email};
+                    const result = await productCollection.deleteOne(filter);
+                    res.send(result);
+                  })
+
                   app.post('/reviews', verifyJWT, async (req, res) => {
                     const reviews = req.body;
                     const allReviews = await reviewCollection.insertOne(reviews);
@@ -162,10 +240,7 @@ const verifyAdmin = async (req, res, next) => {
                     res.send(allProfile);
                   });
                   
-    app.get('/product',  async (req, res) => {
-      const product = await productCollection.find().sort({_id: -1}).toArray();
-      res.send(product);
-    })
+    
     app.get('/reviews',  async (req, res) => {
       const reviews = await reviewCollection.find().sort({_id: -1}).toArray();
       res.send(reviews);
